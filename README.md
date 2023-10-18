@@ -24,6 +24,7 @@ let query = r#"
 let variables = serde_json::json!({
     "id": "25B75811-6866-4081-AF69-2BD27756D66C"
 });
+// the _result type can be anything that implements serde::Deserialize
 let _result: serde_json::Value = gql_client.post_query(
     query,
     variables,
