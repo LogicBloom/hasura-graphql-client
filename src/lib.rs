@@ -1,6 +1,5 @@
 mod error;
 
-use anyhow::Context;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
