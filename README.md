@@ -27,7 +27,7 @@ let variables = serde_json::json!({
 // the _result type can be anything that implements serde::Deserialize
 let _result: serde_json::Value = gql_client.post_query(
     query,
-    variables,
+    Some(variables),
     // if no bearer_token is provided, the queries will be ran as admin via the x-hasura-admin-secret
     None
 );
