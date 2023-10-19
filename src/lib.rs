@@ -35,10 +35,7 @@ impl HasuraGraphQLClient {
         V: Serialize,
         for<'a> R: Deserialize<'a>,
     {
-        let body = serde_json::json!({
-            "query": query,
-            "variables": variables
-        });
+        let body = GraphQLRequest { query, variables };
         let mut builder = self.http_client.post(&self.api_url).json(&body);
         if let Some(token) = bearer_token {
             builder = builder.bearer_auth(token.into());
@@ -65,4 +62,10 @@ impl HasuraGraphQLClient {
             .ok_or_else(|| anyhow::anyhow!("Invalid response body: missing the 'data' property"))?;
         Ok(serde_json::from_value::<R>(result.to_owned()).map_err(|e| anyhow::anyhow!("{e:?}"))?)
     }
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct GraphQLRequest<Q: Into<String>, V> {
+    query: Q,
+    variables: Option<V>,
 }
