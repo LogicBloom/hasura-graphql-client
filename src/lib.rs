@@ -37,7 +37,7 @@ impl HasuraGraphQLClient {
         let body = GraphQLRequest { query, variables };
         let mut builder = self.http_client.post(&self.api_url).json(&body);
         if let Some(token) = bearer_token {
-            builder = builder.bearer_auth(token.into());
+            builder = builder.header("Authorization", token.into());
         } else {
             builder = builder.header("x-hasura-admin-secret", &self.hasura_admin_secret);
         }
