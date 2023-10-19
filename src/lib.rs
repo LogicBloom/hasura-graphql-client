@@ -10,6 +10,7 @@ pub use error::HasuraGraphQLClientError;
 pub struct HasuraGraphQLClient {
     http_client: Client,
     api_url: String,
+    // TODO: mask admin secret in secrecy::Secret
     hasura_admin_secret: String,
 }
 
