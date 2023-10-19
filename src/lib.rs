@@ -47,20 +47,15 @@ impl HasuraGraphQLClient {
             .await?
             .error_for_status()?
             .json::<serde_json::Value>()
-            .await
-            .context("Failed to deserialize response body to JSON")?;
-        if result.get("errors").is_some() {
-            // safe to unwrap since we know the value is some
-            let errors = serde_json::from_value::<Vec<HasuraError>>(
-                result.get("errors").unwrap().to_owned(),
-            )
-            .context("Failed to deserialize to Vec<HasuraError>")?;
+            .await?;
+        if let Some(errors) = result.get("errors") {
+            let errors = serde_json::from_value::<Vec<HasuraError>>(errors.to_owned())?;
             return Err(HasuraGraphQLClientError::GraphqlError(errors));
         }
-        let result = result
-            .get("data")
-            .ok_or_else(|| anyhow::anyhow!("Invalid response body: missing the 'data' property"))?;
-        Ok(serde_json::from_value::<R>(result.to_owned()).map_err(|e| anyhow::anyhow!("{e:?}"))?)
+        let result = result.get("data").ok_or(anyhow::anyhow!(
+            "Invalid response body: missing the 'data' property"
+        ))?;
+        Ok(serde_json::from_value::<R>(result.to_owned())?)
     }
 }
 
