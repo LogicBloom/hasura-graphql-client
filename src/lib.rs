@@ -1,6 +1,8 @@
 mod error;
 
 use reqwest::Client;
+use secrecy::ExposeSecret;
+use secrecy::Secret;
 use serde::{Deserialize, Serialize};
 
 use error::HasuraError;
@@ -10,37 +12,38 @@ pub use error::HasuraGraphQLClientError;
 pub struct HasuraGraphQLClient {
     http_client: Client,
     api_url: String,
-    // TODO: mask admin secret in secrecy::Secret
-    hasura_admin_secret: String,
+    hasura_admin_secret: Secret<String>,
 }
 
 impl HasuraGraphQLClient {
-    pub fn new<T: Into<String>>(api_url: T, hasura_admin_secret: T) -> Self {
+    pub fn new(api_url: &str, hasura_admin_secret: &str) -> Self {
         let http_client = Client::default();
         Self {
             http_client,
-            hasura_admin_secret: hasura_admin_secret.into(),
+            hasura_admin_secret: Secret::new(hasura_admin_secret.into()),
             api_url: api_url.into(),
         }
     }
 
-    pub async fn post_query<Q, V, R>(
+    pub async fn post_query<R, V>(
         &self,
-        query: Q,
+        query: &str,
         variables: Option<V>,
-        bearer_token: Option<Q>,
+        bearer_token: Option<&str>,
     ) -> Result<R, HasuraGraphQLClientError>
     where
-        Q: Clone + Into<String> + Serialize,
-        V: Clone + Serialize,
         for<'a> R: Deserialize<'a>,
+        V: Clone + Serialize,
     {
         let body = GraphQLRequest { query, variables };
         let mut builder = self.http_client.post(&self.api_url).json(&body);
         if let Some(token) = bearer_token {
-            builder = builder.header("Authorization", format!("Bearer {}", token.into()))
+            builder = builder.header("Authorization", format!("Bearer {}", token))
         } else {
-            builder = builder.header("x-hasura-admin-secret", &self.hasura_admin_secret);
+            builder = builder.header(
+                "x-hasura-admin-secret",
+                self.hasura_admin_secret.expose_secret(),
+            );
         }
         let result = builder
             .send()
