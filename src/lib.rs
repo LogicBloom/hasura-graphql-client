@@ -30,8 +30,8 @@ impl HasuraGraphQLClient {
         bearer_token: Option<Q>,
     ) -> Result<R, HasuraGraphQLClientError>
     where
-        Q: Into<String> + Serialize,
-        V: Serialize,
+        Q: Clone + Into<String> + Serialize,
+        V: Clone + Serialize,
         for<'a> R: Deserialize<'a>,
     {
         let body = GraphQLRequest { query, variables };
