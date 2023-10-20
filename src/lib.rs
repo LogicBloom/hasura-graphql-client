@@ -8,19 +8,19 @@ use serde::{Deserialize, Serialize};
 use error::HasuraError;
 pub use error::HasuraGraphQLClientError;
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct HasuraGraphQLClient {
-    http_client: Client,
     api_url: String,
-    hasura_admin_secret: Secret<String>,
+    admin_secret: Secret<String>,
+    http_client: Client,
 }
 
 impl HasuraGraphQLClient {
-    pub fn new(api_url: &str, hasura_admin_secret: &str) -> Self {
+    pub fn new(api_url: &str, admin_secret: &str) -> Self {
         let http_client = Client::default();
         Self {
             http_client,
-            hasura_admin_secret: Secret::new(hasura_admin_secret.into()),
+            admin_secret: Secret::new(admin_secret.into()),
             api_url: api_url.into(),
         }
     }
@@ -40,10 +40,7 @@ impl HasuraGraphQLClient {
         if let Some(token) = bearer_token {
             builder = builder.header("Authorization", format!("Bearer {}", token))
         } else {
-            builder = builder.header(
-                "x-hasura-admin-secret",
-                self.hasura_admin_secret.expose_secret(),
-            );
+            builder = builder.header("x-hasura-admin-secret", self.admin_secret.expose_secret());
         }
         let result = builder
             .send()
