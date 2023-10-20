@@ -45,17 +45,22 @@ impl HasuraGraphQLClient {
             .send()
             .await?
             .error_for_status()?
-            .json::<serde_json::Value>()
+            .json::<HasuraResponse<R>>()
             .await?;
-        if let Some(errors) = result.get("errors") {
-            let errors = serde_json::from_value::<Vec<HasuraError>>(errors.to_owned())?;
+        if let Some(errors) = result.errors {
             return Err(HasuraGraphQLClientError::GraphqlError(errors));
         }
-        let result = result.get("data").ok_or(anyhow::anyhow!(
+        let result = result.data.ok_or(anyhow::anyhow!(
             "Invalid response body: missing the 'data' property"
         ))?;
-        Ok(serde_json::from_value::<R>(result.to_owned())?)
+        Ok(result)
     }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct HasuraResponse<T> {
+    data: Option<T>,
+    errors: Option<Vec<HasuraError>>,
 }
 
 #[derive(Clone, Debug, Serialize)]
