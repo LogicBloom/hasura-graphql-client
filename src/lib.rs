@@ -17,11 +17,10 @@ pub struct HasuraGraphQLClient {
 
 impl HasuraGraphQLClient {
     pub fn new(api_url: &str, admin_secret: &str) -> Self {
-        let http_client = Client::default();
         Self {
-            http_client,
             admin_secret: Secret::new(admin_secret.into()),
             api_url: api_url.into(),
+            http_client: Client::default(),
         }
     }
 
