@@ -6,7 +6,7 @@ A graphql client that is designed to make calls to the hasura graphql engine.
 
 ```toml
 [dependencies]
-chatterverse_hasura_graphql_client = {git = "https://github.com/chatterverse-ai/hasura-graphql-client.git"}
+chatterverse_hasura_graphql_client = {git = "https://github.com/LogicBloom/hasura-graphql-client.git"}
 ```
 
 then:
